@@ -1,5 +1,12 @@
 .App {
   text-align: center;
+  font-family: 'Arial', sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f0f0f0;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
 .App-logo {
@@ -35,4 +42,62 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.App h1 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+.street-view-image {
+  max-width: 100%;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.2);
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #2980b9;
+}
+
+.quest-info {
+  background-color: white;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+.map-container {
+  margin-bottom: 20px;
+}
+
+.guesses-left {
+  font-weight: bold;
+  color: #e74c3c;
+}
+
+.back-to-menu {
+  background-color: #e74c3c;
+}
+
+.back-to-menu:hover {
+  background-color: #c0392b;
 }

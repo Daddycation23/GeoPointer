@@ -208,35 +208,48 @@ function App() {
     <div className="App">
       <h1>GeoQuest</h1>
       <PlayerProfile player={playerData} />
-      {error && <p>{error}</p>}
+      {error && <p className="error">{error}</p>}
       {!guessMode ? (
-        <>
+        <div className="start-screen">
+          <h2>Welcome to GeoQuest!</h2>
+          <p>Test your geography skills by guessing locations around the world.</p>
           <button onClick={handleStartQuest}>Start New Quest</button>
-        </>
+        </div>
       ) : (
         currentLocation && (
-          <>
-            <p>{currentLocation.clue}</p>
-            {streetViewImage && <img src={streetViewImage} alt="Street View" />}
-            <button onClick={handleShowHint}>Show Hint</button>
-            <button onClick={toggle3DMode}>{is3DMode ? "Switch to 2D" : "Switch to 3D"}</button>
-            <Map 
-              location={currentLocation} 
-              hintLocation={hintLocation} 
-              userGuess={userGuess}
-              onMapClick={handleMapClick}
-              showTarget={showTarget}
-              is3DMode={is3DMode}
-            />
+          <div className="quest-screen">
+            <div className="quest-info">
+              <h3>Current Quest</h3>
+              <p>{currentLocation.clue}</p>
+            </div>
+            {streetViewImage && <img src={streetViewImage} alt="Street View" className="street-view-image" />}
+            <div className="button-container">
+              <button onClick={handleShowHint}>Show Hint</button>
+              <button onClick={toggle3DMode}>{is3DMode ? "Switch to 2D" : "Switch to 3D"}</button>
+            </div>
+            <div className="map-container">
+              <Map 
+                location={currentLocation} 
+                hintLocation={hintLocation} 
+                userGuess={userGuess}
+                onMapClick={handleMapClick}
+                showTarget={showTarget}
+                is3DMode={is3DMode}
+              />
+            </div>
             {userGuess && !showTarget && (
               <button onClick={handleGuessSubmit}>Submit Guess</button>
             )}
-            {!questCompleted && <p>Guesses left: {3 - guessCount}</p>}
+            {!questCompleted && <p className="guesses-left">Guesses left: {3 - guessCount}</p>}
             {questCompleted && (
-              <button onClick={handleNextQuest}>Start Next Quest</button>
+              <div className="quest-completed">
+                <h3>Quest Completed!</h3>
+                <p>Great job! Ready for the next challenge?</p>
+                <button onClick={handleNextQuest}>Start Next Quest</button>
+              </div>
             )}
-            <button onClick={handleBackToMenu}>Back to Menu</button>
-          </>
+            <button onClick={handleBackToMenu} className="back-to-menu">Back to Menu</button>
+          </div>
         )
       )}
     </div>
