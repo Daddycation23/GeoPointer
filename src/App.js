@@ -91,6 +91,20 @@ const useStyles = makeStyles((theme) => ({
     height: 50,
     marginRight: theme.spacing(2),
   },
+  title: {
+    fontFamily: 'Comic Sans MS, Comic Sans, cursive',
+    fontWeight: 500,  // This sets the font weight to the boldest available
+    fontSize: '4rem',  // You can adjust this value to make the title larger or smaller
+  },
+  rulesSection: {
+    marginTop: theme.spacing(3),
+    padding: theme.spacing(2),
+    backgroundColor: '#f0f4f8',
+    borderRadius: theme.shape.borderRadius,
+  },
+  rulesList: {
+    paddingLeft: theme.spacing(3),
+  },
 }));
 
 function NameInputForm({ onSubmit }) {
@@ -153,6 +167,7 @@ function App() {
   const [questCompleted, setQuestCompleted] = useState(false);
   const [playerName, setPlayerName] = useState(localStorage.getItem('playerName') || '');
   const [userLocation, setUserLocation] = useState(null);
+  const [mapCenter, setMapCenter] = useState(null);
 
   useEffect(() => {
     if (playerName) {
@@ -218,6 +233,7 @@ function App() {
         setIs3DMode(false);
         setHintLocation(null);
         setUserGuess(null);
+        setMapCenter(userLocation); // Set the map center to the user's location
       } else {
         // If no image, try again
         generateNearbyQuest();
@@ -382,13 +398,36 @@ function App() {
     </Paper>
   );
 
+  const renderRules = () => (
+    <Paper className={classes.rulesSection}>
+      <Typography variant="h6" gutterBottom>
+        How to Play
+      </Typography>
+      <ol className={classes.rulesList}>
+        <li>Start a new quest to get a random location within 15km of your position.</li>
+        <li>Use the street view image and map to guess the location.</li>
+        <li>Click on the map to place your guess.</li>
+        <li>You have 3 attempts to guess the location.</li>
+        <li>Use the "Show Hint" button for a hint within 500m of the target.</li>
+        <li>Switch between 2D and 3D views for a better perspective.</li>
+        <li>Points are awarded based on the accuracy of your guess:</li>
+        <ul>
+          <li>Within 100m: 3 points</li>
+          <li>100m - 200m: 2 points</li>
+          <li>200m - 300m: 1 point</li>
+          <li>Over 300m: -1 point</li>
+        </ul>
+      </ol>
+    </Paper>
+  );
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Container maxWidth="lg" className={classes.root}>
         <Box className={classes.titleContainer}>
           <img src="/GeoQuestLogo.png" alt="GeoQuest Logo" className={classes.logo} />
-          <Typography variant="h2" component="h1">
+          <Typography variant="h2" component="h1" className={classes.title}>
             GeoQuest
           </Typography>
         </Box>
@@ -401,22 +440,25 @@ function App() {
               <Typography color="error">{error}</Typography>
             )}
             {!guessMode ? (
-              <Paper className={classes.paper}>
-                <Typography variant="h5" gutterBottom>
-                  Welcome to GeoQuest, {playerName}!
-                </Typography>
-                <Typography variant="body1" paragraph>
-                  Test your geography skills by guessing locations around the world.
-                </Typography>
-                <Button 
-                  variant="contained" 
-                  color="primary" 
-                  onClick={handleStartQuest}
-                  className={classes.button}
-                >
-                  Start New Quest
-                </Button>
-              </Paper>
+              <>
+                <Paper className={classes.paper}>
+                  <Typography variant="h5" gutterBottom>
+                    Welcome to GeoQuest, {playerName}!
+                  </Typography>
+                  <Typography variant="body1" paragraph>
+                    Discover places near you by guessing their locations. Who knows you might find a new favourite place?
+                  </Typography>
+                  <Button 
+                    variant="contained" 
+                    color="primary" 
+                    onClick={handleStartQuest}
+                    className={classes.button}
+                  >
+                    Start New Quest
+                  </Button>
+                </Paper>
+                {renderRules()}
+              </>
             ) : (
               currentLocation && (
                 <Grid container spacing={3}>
@@ -448,6 +490,7 @@ function App() {
                         onMapClick={handleMapClick}
                         showTarget={showTarget}
                         is3DMode={is3DMode}
+                        mapCenter={mapCenter} // Pass the mapCenter to the Map component
                       />
                     </div>
                   </Grid>

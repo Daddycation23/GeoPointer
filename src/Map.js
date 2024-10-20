@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 
-function Map({ location, hintLocation, userGuess, onMapClick, showTarget, is3DMode }) {
+function Map({ location, hintLocation, userGuess, onMapClick, showTarget, is3DMode, mapCenter }) {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries: ['maps'],
@@ -40,8 +40,8 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, is3DMo
 
   return isLoaded ? (
     <GoogleMap
-      center={{ lat: location.lat, lng: location.lng }}
-      zoom={15}
+      center={mapCenter || { lat: 0, lng: 0 }} // Use mapCenter if available, otherwise use a default
+      zoom={mapCenter ? 11 : 2} // Use a wider zoom when mapCenter is available, otherwise show world map
       mapContainerStyle={{ width: '100%', height: '100%' }}
       onClick={onMapClick}
       onLoad={onMapLoad}
