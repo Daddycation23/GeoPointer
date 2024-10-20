@@ -23,8 +23,12 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, is3DMo
   const updateMapSettings = (map) => {
     if (is3DMode) {
       map.setTilt(45);
+      map.setHeading(0);
+      map.setMapTypeId('satellite');
     } else {
       map.setTilt(0);
+      map.setHeading(0);
+      map.setMapTypeId('roadmap');
     }
   };
 
@@ -32,7 +36,7 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, is3DMo
     <GoogleMap
       center={{ lat: location.lat, lng: location.lng }}
       zoom={15}
-      mapContainerStyle={{ width: '100%', height: '400px' }}
+      mapContainerStyle={{ width: '100%', height: '100%' }}
       onClick={onMapClick}
       onLoad={onMapLoad}
       options={{
@@ -43,32 +47,11 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, is3DMo
           style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
           position: window.google.maps.ControlPosition.TOP_RIGHT,
         },
+        tilt: is3DMode ? 45 : 0,
+        mapTypeId: is3DMode ? 'satellite' : 'roadmap',
       }}
     >
-      {hintLocation && (
-        <Marker
-          position={{ lat: hintLocation.lat, lng: hintLocation.lng }}
-          icon={{
-            url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
-          }}
-        />
-      )}
-      {userGuess && (
-        <Marker
-          position={{ lat: userGuess.lat, lng: userGuess.lng }}
-          icon={{
-            url: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
-          }}
-        />
-      )}
-      {showTarget && (
-        <Marker
-          position={{ lat: location.lat, lng: location.lng }}
-          icon={{
-            url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
-          }}
-        />
-      )}
+      {/* Markers */}
     </GoogleMap>
   ) : (
     <p>Loading map...</p>

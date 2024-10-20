@@ -1,18 +1,120 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { 
+  CssBaseline, 
+  ThemeProvider, 
+  Container, 
+  Typography, 
+  Button, 
+  Paper, 
+  Grid,
+  TextField
+} from '@material-ui/core';
+import { makeStyles, createTheme } from '@material-ui/core/styles';
 import Map from './Map';
 import PlayerProfile from './PlayerProfile';
-import './App.css';
 
 const API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
 
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2',
+    },
+    secondary: {
+      main: '#dc004e',
+    },
+  },
+});
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    flexGrow: 1,
+    padding: theme.spacing(3),
+  },
+  paper: {
+    padding: theme.spacing(2),
+    textAlign: 'center',
+    color: theme.palette.text.secondary,
+  },
+  button: {
+    margin: theme.spacing(1),
+  },
+  greenButton: {
+    margin: theme.spacing(1),
+    backgroundColor: '#4CAF50', // Standard green color
+    color: 'white',
+    '&:hover': {
+      backgroundColor: '#45a049', // Darker green for hover state
+    },
+  },
+  streetViewImage: {
+    width: '100%',
+    maxHeight: '400px',
+    objectFit: 'cover',
+    borderRadius: theme.shape.borderRadius,
+    marginBottom: theme.spacing(2),
+  },
+  mapContainer: {
+    height: '500px',
+    width: '100%',
+    marginBottom: theme.spacing(2),
+  },
+  nameInput: {
+    marginBottom: theme.spacing(2),
+  },
+}));
+
+function NameInputForm({ onSubmit }) {
+  const classes = useStyles();
+  const [name, setName] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (name.trim()) {
+      onSubmit(name.trim());
+    }
+  };
+
+  return (
+    <Paper className={classes.paper}>
+      <Typography variant="h5" gutterBottom>
+        Welcome to GeoQuest!
+      </Typography>
+      <Typography variant="body1" paragraph>
+        Please enter your name to start playing.
+      </Typography>
+      <form onSubmit={handleSubmit}>
+        <TextField
+          className={classes.nameInput}
+          label="Your Name"
+          variant="outlined"
+          fullWidth
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <Button 
+          type="submit" 
+          variant="contained" 
+          color="primary" 
+          className={classes.button}
+          disabled={!name.trim()}
+        >
+          Start Playing
+        </Button>
+      </form>
+    </Paper>
+  );
+}
+
 function App() {
+  const classes = useStyles();
   const [playerLocation, setPlayerLocation] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [playerData, setPlayerData] = useState({
-    name: 'Jian Xin',
+    name: localStorage.getItem('playerName') || '',
     points: 0,
-    badges: [],
+    avatar: localStorage.getItem('playerAvatar') || '',
   });
   const [guessMode, setGuessMode] = useState(false);
   const [streetViewImage, setStreetViewImage] = useState(null);
@@ -23,6 +125,7 @@ function App() {
   const [showTarget, setShowTarget] = useState(false);
   const [is3DMode, setIs3DMode] = useState(false);
   const [questCompleted, setQuestCompleted] = useState(false);
+  const [playerName, setPlayerName] = useState(localStorage.getItem('playerName') || '');
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -38,7 +141,10 @@ function App() {
         { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
       );
     }
-  }, []);
+    if (playerName) {
+      localStorage.setItem('playerName', playerName);
+    }
+  }, [playerName]);
 
   const generateNearbyQuest = async (userLocation) => {
     try {
@@ -83,6 +189,7 @@ function App() {
       setGuessMode(true);
       setGuessCount(0);
       setShowTarget(false);
+      setIs3DMode(false); // Ensure 2D mode when starting a new quest
     } catch (error) {
       console.error('Error generating nearby quest:', error);
       setError('Failed to generate a quest. Please try again.');
@@ -158,7 +265,11 @@ function App() {
     if (distance <= 100 || guessCount === 2) {
       setShowTarget(true);
       setQuestCompleted(true);
-      alert(`Your guess was ${Math.round(distance)} meters away. You earned ${points} points! Quest completed.`);
+      if (distance <= 100) {
+        alert(`Your guess was ${Math.round(distance)} meters away. You earned ${points} points! Quest completed.`);
+      } else {
+        alert(`Your guess was ${Math.round(distance)} meters away. You earned ${points} points. You've used all 3 guesses. The location will now be shown.`);
+      }
     } else {
       alert(`Your guess was ${Math.round(distance)} meters away. You earned ${points} points! You have ${3 - (guessCount + 1)} guesses left.`);
       setUserGuess(null);
@@ -194,6 +305,7 @@ function App() {
     setGuessCount(0);
     setShowTarget(false);
     setQuestCompleted(false);
+    setIs3DMode(false); // Ensure 2D mode when resetting the quest
   };
 
   const handleBackToMenu = () => {
@@ -204,55 +316,156 @@ function App() {
     setIs3DMode(!is3DMode);
   };
 
+  const handleNameSubmit = (name) => {
+    setPlayerName(name);
+    setPlayerData(prevData => ({ ...prevData, name }));
+  };
+
+  const handleProfileUpdate = (updatedProfile) => {
+    setPlayerData(prevData => ({
+      ...prevData,
+      ...updatedProfile
+    }));
+    localStorage.setItem('playerName', updatedProfile.name);
+    localStorage.setItem('playerAvatar', updatedProfile.avatar);
+  };
+
   return (
-    <div className="App">
-      <h1>GeoQuest</h1>
-      <PlayerProfile player={playerData} />
-      {error && <p className="error">{error}</p>}
-      {!guessMode ? (
-        <div className="start-screen">
-          <h2>Welcome to GeoQuest!</h2>
-          <p>Test your geography skills by guessing locations around the world.</p>
-          <button onClick={handleStartQuest}>Start New Quest</button>
-        </div>
-      ) : (
-        currentLocation && (
-          <div className="quest-screen">
-            <div className="quest-info">
-              <h3>Current Quest</h3>
-              <p>{currentLocation.clue}</p>
-            </div>
-            {streetViewImage && <img src={streetViewImage} alt="Street View" className="street-view-image" />}
-            <div className="button-container">
-              <button onClick={handleShowHint}>Show Hint</button>
-              <button onClick={toggle3DMode}>{is3DMode ? "Switch to 2D" : "Switch to 3D"}</button>
-            </div>
-            <div className="map-container">
-              <Map 
-                location={currentLocation} 
-                hintLocation={hintLocation} 
-                userGuess={userGuess}
-                onMapClick={handleMapClick}
-                showTarget={showTarget}
-                is3DMode={is3DMode}
-              />
-            </div>
-            {userGuess && !showTarget && (
-              <button onClick={handleGuessSubmit}>Submit Guess</button>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Container maxWidth="lg" className={classes.root}>
+        <Typography variant="h2" component="h1" gutterBottom>
+          GeoQuest
+        </Typography>
+        {!playerName ? (
+          <NameInputForm onSubmit={handleNameSubmit} />
+        ) : (
+          <>
+            <PlayerProfile player={playerData} onUpdateProfile={handleProfileUpdate} />
+            {error && (
+              <Typography color="error">{error}</Typography>
             )}
-            {!questCompleted && <p className="guesses-left">Guesses left: {3 - guessCount}</p>}
-            {questCompleted && (
-              <div className="quest-completed">
-                <h3>Quest Completed!</h3>
-                <p>Great job! Ready for the next challenge?</p>
-                <button onClick={handleNextQuest}>Start Next Quest</button>
-              </div>
+            {!guessMode ? (
+              <Paper className={classes.paper}>
+                <Typography variant="h5" gutterBottom>
+                  Welcome to GeoQuest, {playerName}!
+                </Typography>
+                <Typography variant="body1" paragraph>
+                  Test your geography skills by guessing locations around the world.
+                </Typography>
+                <Button 
+                  variant="contained" 
+                  color="primary" 
+                  onClick={handleStartQuest}
+                  className={classes.button}
+                >
+                  Start New Quest
+                </Button>
+              </Paper>
+            ) : (
+              currentLocation && (
+                <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    <Paper className={classes.paper}>
+                      <Typography variant="h6" gutterBottom>
+                        Current Quest
+                      </Typography>
+                      <Typography variant="body1">
+                        {currentLocation.clue}
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                  <Grid item xs={12}>
+                    {streetViewImage && (
+                      <img 
+                        src={streetViewImage} 
+                        alt="Street View" 
+                        className={classes.streetViewImage} 
+                      />
+                    )}
+                  </Grid>
+                  <Grid item xs={12}>
+                    <div className={classes.mapContainer}>
+                      <Map 
+                        location={currentLocation} 
+                        hintLocation={hintLocation} 
+                        userGuess={userGuess}
+                        onMapClick={handleMapClick}
+                        showTarget={showTarget}
+                        is3DMode={is3DMode}
+                      />
+                    </div>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Button 
+                      variant="contained" 
+                      color="primary" 
+                      onClick={handleShowHint}
+                      className={classes.button}
+                    >
+                      Show Hint
+                    </Button>
+                    <Button 
+                      variant="contained" 
+                      color="primary" 
+                      onClick={toggle3DMode}
+                      className={classes.button}
+                    >
+                      {is3DMode ? "Switch to 2D" : "Switch to 3D"}
+                    </Button>
+                    {userGuess && !showTarget && (
+                      <Button 
+                        variant="contained" 
+                        onClick={handleGuessSubmit}
+                        className={classes.greenButton}
+                      >
+                        Submit Guess
+                      </Button>
+                    )}
+                  </Grid>
+                  {!questCompleted && (
+                    <Grid item xs={12}>
+                      <Typography variant="h6" color="error">
+                        Guesses left: {3 - guessCount}
+                      </Typography>
+                    </Grid>
+                  )}
+                  {questCompleted && (
+                    <Grid item xs={12}>
+                      <Paper className={classes.paper}>
+                        <Typography variant="h6" gutterBottom>
+                          Quest Completed!
+                        </Typography>
+                        <Typography variant="body1" paragraph>
+                          Great job! Ready for the next challenge?
+                        </Typography>
+                        <Button 
+                          variant="contained" 
+                          onClick={handleNextQuest}
+                          className={classes.greenButton}
+                        >
+                          Start Next Quest
+                        </Button>
+                      </Paper>
+                    </Grid>
+                  )}
+                  <Grid item xs={12}>
+                    <Button 
+                      variant="contained" 
+                      color="secondary" 
+                      onClick={handleBackToMenu}
+                      className={classes.button}
+                    >
+                      Back to Menu
+                    </Button>
+                  </Grid>
+                </Grid>
+              )
             )}
-            <button onClick={handleBackToMenu} className="back-to-menu">Back to Menu</button>
-          </div>
-        )
-      )}
-    </div>
+          </>
+        )}
+      </Container>
+    </ThemeProvider>
   );
 }
 
