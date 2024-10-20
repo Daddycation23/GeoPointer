@@ -8,7 +8,8 @@ import {
   Button, 
   Paper, 
   Grid,
-  TextField
+  TextField,
+  Box
 } from '@material-ui/core';
 import { makeStyles, createTheme } from '@material-ui/core/styles';
 import Map from './Map';
@@ -79,6 +80,16 @@ const useStyles = makeStyles((theme) => ({
     height: 20,
     borderRadius: '50%',
     marginRight: theme.spacing(1),
+  },
+  titleContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: theme.spacing(3),
+  },
+  logo: {
+    width: 50,
+    height: 50,
+    marginRight: theme.spacing(2),
   },
 }));
 
@@ -375,9 +386,12 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Container maxWidth="lg" className={classes.root}>
-        <Typography variant="h2" component="h1" gutterBottom>
-          GeoQuest
-        </Typography>
+        <Box className={classes.titleContainer}>
+          <img src="/GeoQuestLogo.png" alt="GeoQuest Logo" className={classes.logo} />
+          <Typography variant="h2" component="h1">
+            GeoQuest
+          </Typography>
+        </Box>
         {!playerName ? (
           <NameInputForm onSubmit={handleNameSubmit} />
         ) : (
@@ -412,7 +426,7 @@ function App() {
                         Current Quest
                       </Typography>
                       <Typography variant="body1">
-                        {currentLocation.clue}
+                        Can you find this location?
                       </Typography>
                     </Paper>
                   </Grid>

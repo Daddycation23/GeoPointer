@@ -8,30 +8,28 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, is3DMo
   });
 
   const mapRef = useRef(null);
-  const [mapType, setMapType] = useState(is3DMode ? 'satellite' : 'roadmap');
+  const [mapType, setMapType] = useState('satellite');
 
   const onMapLoad = useCallback((map) => {
     mapRef.current = map;
-    updateMapSettings(map);
-  }, []);
+    updateMapSettings(map, is3DMode);
+  }, [is3DMode]);
 
   useEffect(() => {
     if (mapRef.current) {
-      updateMapSettings(mapRef.current);
+      updateMapSettings(mapRef.current, is3DMode);
     }
   }, [is3DMode]);
 
-  const updateMapSettings = (map) => {
-    if (is3DMode) {
+  const updateMapSettings = (map, is3D) => {
+    map.setMapTypeId('satellite');
+    if (is3D) {
       map.setTilt(45);
-      map.setHeading(0);
-      setMapType('satellite');
     } else {
       map.setTilt(0);
-      map.setHeading(0);
-      setMapType('roadmap');
     }
-    map.setMapTypeId(mapType);
+    map.setHeading(0);
+    setMapType('satellite');
   };
 
   const handleMapTypeChange = () => {
@@ -57,7 +55,7 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, is3DMo
           position: window.google.maps.ControlPosition.TOP_RIGHT,
         },
         tilt: is3DMode ? 45 : 0,
-        mapTypeId: mapType,
+        mapTypeId: 'satellite',
       }}
     >
       {hintLocation && (
