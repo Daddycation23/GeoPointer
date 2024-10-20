@@ -63,6 +63,23 @@ const useStyles = makeStyles((theme) => ({
   nameInput: {
     marginBottom: theme.spacing(2),
   },
+  infoBox: {
+    padding: theme.spacing(2),
+    marginBottom: theme.spacing(2),
+    backgroundColor: '#f0f4f8',
+    borderRadius: theme.shape.borderRadius,
+  },
+  pinInfo: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: theme.spacing(1),
+  },
+  pinColor: {
+    width: 20,
+    height: 20,
+    borderRadius: '50%',
+    marginRight: theme.spacing(1),
+  },
 }));
 
 function NameInputForm({ onSubmit }) {
@@ -109,12 +126,10 @@ function NameInputForm({ onSubmit }) {
 
 function App() {
   const classes = useStyles();
-  const [playerLocation, setPlayerLocation] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [playerData, setPlayerData] = useState({
     name: localStorage.getItem('playerName') || '',
     points: 0,
-    avatar: localStorage.getItem('playerAvatar') || '',
   });
   const [guessMode, setGuessMode] = useState(false);
   const [streetViewImage, setStreetViewImage] = useState(null);
@@ -126,70 +141,76 @@ function App() {
   const [is3DMode, setIs3DMode] = useState(false);
   const [questCompleted, setQuestCompleted] = useState(false);
   const [playerName, setPlayerName] = useState(localStorage.getItem('playerName') || '');
+  const [userLocation, setUserLocation] = useState(null);
 
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const userLocation = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
-          setPlayerLocation(userLocation);
-        },
-        () => setError("Failed to get location."),
-        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-      );
-    }
     if (playerName) {
       localStorage.setItem('playerName', playerName);
     }
   }, [playerName]);
 
-  const generateNearbyQuest = async (userLocation) => {
+  useEffect(() => {
+    getUserLocation();
+  }, []);
+
+  const getUserLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.error("Error getting user location:", error);
+          setError("Unable to get your location. Please enable location services.");
+        }
+      );
+    } else {
+      setError("Geolocation is not supported by your browser.");
+    }
+  };
+
+  const generateNearbyQuest = async () => {
+    if (!userLocation) {
+      setError("User location is not available. Please enable location services and refresh the page.");
+      return;
+    }
+
     try {
       const placeTypes = ['restaurant', 'museum', 'park', 'library', 'cafe', 'landmark', 'tourist_attraction'];
       const randomType = placeTypes[Math.floor(Math.random() * placeTypes.length)];
 
-      let newLocation;
-      let hasImage = false;
+      // Generate a random location within 15km of the user's location
+      const angle = Math.random() * 2 * Math.PI;
+      const distance = Math.random() * 15000; // Up to 15km in meters
+      const latOffset = distance / 111111 * Math.cos(angle);
+      const lngOffset = distance / (111111 * Math.cos(userLocation.lat * Math.PI / 180)) * Math.sin(angle);
 
-      while (!hasImage) {
-        // Generate a random location within 15km of the user's location
-        const angle = Math.random() * 2 * Math.PI;
-        const distance = Math.random() * 15000; // Up to 15km in meters
-        const latOffset = distance / 111111 * Math.cos(angle);
-        const lngOffset = distance / (111111 * Math.cos(userLocation.lat * Math.PI / 180)) * Math.sin(angle);
+      const newLocation = {
+        id: 'dummy_id',
+        name: 'Mystery Location',
+        lat: userLocation.lat + latOffset,
+        lng: userLocation.lng + lngOffset,
+        clue: `Can you find this ${randomType}?`,
+      };
 
-        const dummyPlace = {
-          place_id: 'dummy_id',
-          name: `Mystery Location`,
-          geometry: {
-            location: {
-              lat: userLocation.lat + latOffset,
-              lng: userLocation.lng + lngOffset,
-            }
-          }
-        };
-
-        newLocation = {
-          id: dummyPlace.place_id,
-          name: dummyPlace.name,
-          lat: dummyPlace.geometry.location.lat,
-          lng: dummyPlace.geometry.location.lng,
-          clue: `Can you find this location?`,
-        };
-
-        // Check if the location has a Street View image
-        hasImage = await checkStreetViewImage(newLocation);
+      // Check if the location has a Street View image
+      const hasImage = await checkStreetViewImage(newLocation);
+      if (hasImage) {
+        setCurrentLocation(newLocation);
+        getStreetViewImage(newLocation);
+        setGuessMode(true);
+        setGuessCount(0);
+        setShowTarget(false);
+        setIs3DMode(false);
+        setHintLocation(null);
+        setUserGuess(null);
+      } else {
+        // If no image, try again
+        generateNearbyQuest();
       }
-
-      setCurrentLocation(newLocation);
-      getStreetViewImage(newLocation);
-      setGuessMode(true);
-      setGuessCount(0);
-      setShowTarget(false);
-      setIs3DMode(false); // Ensure 2D mode when starting a new quest
     } catch (error) {
       console.error('Error generating nearby quest:', error);
       setError('Failed to generate a quest. Please try again.');
@@ -214,7 +235,7 @@ function App() {
   };
 
   const handleStartQuest = () => {
-    generateNearbyQuest(playerLocation);
+    generateNearbyQuest();
   };
 
   const generateHintLocation = () => {
@@ -330,6 +351,26 @@ function App() {
     localStorage.setItem('playerAvatar', updatedProfile.avatar);
   };
 
+  const renderPinInfo = () => (
+    <Paper className={classes.infoBox}>
+      <Typography variant="h6" gutterBottom>
+        Pin Colors
+      </Typography>
+      <div className={classes.pinInfo}>
+        <div className={classes.pinColor} style={{ backgroundColor: 'blue' }}></div>
+        <Typography>Hint location</Typography>
+      </div>
+      <div className={classes.pinInfo}>
+        <div className={classes.pinColor} style={{ backgroundColor: 'green' }}></div>
+        <Typography>Your guess</Typography>
+      </div>
+      <div className={classes.pinInfo}>
+        <div className={classes.pinColor} style={{ backgroundColor: 'red' }}></div>
+        <Typography>Target location (shown after guessing)</Typography>
+      </div>
+    </Paper>
+  );
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -395,6 +436,9 @@ function App() {
                         is3DMode={is3DMode}
                       />
                     </div>
+                  </Grid>
+                  <Grid item xs={12}>
+                    {renderPinInfo()}
                   </Grid>
                   <Grid item xs={12}>
                     <Button 
