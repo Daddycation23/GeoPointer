@@ -1,6 +1,6 @@
 # Welcome to GeoQuest!🎉
 
-GeoQuest is a game that allows you to explore the places around you which you may or may not know already, who knows you might find a hidden gem around you?.
+GeoQuest is a game that allows you to explore the places around you which you may or may not know already, who knows you might find a hidden gem around you?
 
 ## How to run the files
 
