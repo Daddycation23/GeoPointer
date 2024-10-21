@@ -8,7 +8,7 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, is3DMo
   });
 
   const mapRef = useRef(null);
-  const [mapType, setMapType] = useState('satellite');
+  const [mapType, setMapType] = useState('hybrid'); // Start with hybrid mode (satellite + labels)
 
   const onMapLoad = useCallback((map) => {
     mapRef.current = map;
@@ -22,14 +22,12 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, is3DMo
   }, [is3DMode]);
 
   const updateMapSettings = (map, is3D) => {
-    map.setMapTypeId('satellite');
     if (is3D) {
       map.setTilt(45);
     } else {
       map.setTilt(0);
     }
     map.setHeading(0);
-    setMapType('satellite');
   };
 
   const handleMapTypeChange = () => {
@@ -40,8 +38,8 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, is3DMo
 
   return isLoaded ? (
     <GoogleMap
-      center={mapCenter || { lat: 0, lng: 0 }} // Use mapCenter if available, otherwise use a default
-      zoom={mapCenter ? 11 : 2} // Use a wider zoom when mapCenter is available, otherwise show world map
+      center={mapCenter || { lat: 0, lng: 0 }}
+      zoom={mapCenter ? 11 : 2}
       mapContainerStyle={{ width: '100%', height: '100%' }}
       onClick={onMapClick}
       onLoad={onMapLoad}
@@ -55,7 +53,7 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, is3DMo
           position: window.google.maps.ControlPosition.TOP_RIGHT,
         },
         tilt: is3DMode ? 45 : 0,
-        mapTypeId: 'satellite',
+        mapTypeId: mapType, // Use the current mapType state
       }}
     >
       {hintLocation && (
