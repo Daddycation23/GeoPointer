@@ -163,7 +163,6 @@ function App() {
   const [userGuess, setUserGuess] = useState(null);
   const [guessCount, setGuessCount] = useState(0);
   const [showTarget, setShowTarget] = useState(false);
-  const [is3DMode, setIs3DMode] = useState(false);
   const [questCompleted, setQuestCompleted] = useState(false);
   const [playerName, setPlayerName] = useState(localStorage.getItem('playerName') || '');
   const [userLocation, setUserLocation] = useState(null);
@@ -230,7 +229,6 @@ function App() {
         setGuessMode(true);
         setGuessCount(0);
         setShowTarget(false);
-        setIs3DMode(false);
         setHintLocation(null);
         setUserGuess(null);
         setMapCenter(userLocation); // Set the map center to the user's location
@@ -353,15 +351,10 @@ function App() {
     setGuessCount(0);
     setShowTarget(false);
     setQuestCompleted(false);
-    setIs3DMode(false); // Ensure 2D mode when resetting the quest
   };
 
   const handleBackToMenu = () => {
     resetQuest();
-  };
-
-  const toggle3DMode = () => {
-    setIs3DMode(!is3DMode);
   };
 
   const handleNameSubmit = (name) => {
@@ -489,8 +482,8 @@ function App() {
                         userGuess={userGuess}
                         onMapClick={handleMapClick}
                         showTarget={showTarget}
-                        is3DMode={is3DMode}
-                        mapCenter={mapCenter} // Pass the mapCenter to the Map component
+                        mapCenter={mapCenter}
+                        userLocation={userLocation}
                       />
                     </div>
                   </Grid>
@@ -505,14 +498,6 @@ function App() {
                       className={classes.button}
                     >
                       Show Hint
-                    </Button>
-                    <Button 
-                      variant="contained" 
-                      color="primary" 
-                      onClick={toggle3DMode}
-                      className={classes.button}
-                    >
-                      {is3DMode ? "Switch to 2D" : "Switch to 3D"}
                     </Button>
                     {userGuess && !showTarget && (
                       <Button 

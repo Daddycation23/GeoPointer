@@ -1,34 +1,18 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 
-function Map({ location, hintLocation, userGuess, onMapClick, showTarget, is3DMode, mapCenter }) {
+function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCenter, userLocation }) {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries: ['maps'],
   });
 
   const mapRef = useRef(null);
-  const [mapType, setMapType] = useState('hybrid'); // Start with hybrid mode (satellite + labels)
+  const [mapType, setMapType] = useState('hybrid');
 
   const onMapLoad = useCallback((map) => {
     mapRef.current = map;
-    updateMapSettings(map, is3DMode);
-  }, [is3DMode]);
-
-  useEffect(() => {
-    if (mapRef.current) {
-      updateMapSettings(mapRef.current, is3DMode);
-    }
-  }, [is3DMode]);
-
-  const updateMapSettings = (map, is3D) => {
-    if (is3D) {
-      map.setTilt(45);
-    } else {
-      map.setTilt(0);
-    }
-    map.setHeading(0);
-  };
+  }, []);
 
   const handleMapTypeChange = () => {
     if (mapRef.current) {
@@ -48,14 +32,22 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, is3DMo
         disableDefaultUI: false,
         zoomControl: true,
         mapTypeControl: true,
+        streetViewControl: true, // Enable Street View control
         mapTypeControlOptions: {
           style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
           position: window.google.maps.ControlPosition.TOP_RIGHT,
         },
-        tilt: is3DMode ? 45 : 0,
-        mapTypeId: mapType, // Use the current mapType state
+        mapTypeId: mapType,
       }}
     >
+      {userLocation && (
+        <Marker
+          position={{ lat: userLocation.lat, lng: userLocation.lng }}
+          icon={{
+            url: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
+          }}
+        />
+      )}
       {hintLocation && (
         <Marker
           position={{ lat: hintLocation.lat, lng: hintLocation.lng }}
