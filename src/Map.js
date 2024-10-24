@@ -103,9 +103,13 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCen
 
   return isLoaded ? (
     <GoogleMap
-      center={mapCenter || { lat: 0, lng: 0 }}
-      zoom={mapCenter ? 11 : 2}
-      mapContainerStyle={{ width: '100%', height: '100%' }}
+      center={mapCenter || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : { lat: 0, lng: 0 })}
+      zoom={mapCenter || userLocation ? 11 : 2}
+      mapContainerStyle={{ 
+        width: '100%', 
+        height: '100%',
+        borderRadius: '15px', // Added rounded corners
+      }}
       onClick={onMapClick}
       onLoad={onMapLoad}
       onMapTypeIdChanged={handleMapTypeChange}
@@ -121,14 +125,6 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCen
         mapTypeId: mapType,
       }}
     >
-      {userLocation && (
-        <Marker
-          position={{ lat: userLocation.lat, lng: userLocation.lng }}
-          icon={{
-            url: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
-          }}
-        />
-      )}
       {hintLocation && (
         <Marker
           position={{ lat: hintLocation.lat, lng: hintLocation.lng }}
@@ -145,7 +141,7 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCen
           }}
         />
       )}
-      {showTarget && (
+      {showTarget && location && (
         <Marker
           position={{ lat: location.lat, lng: location.lng }}
           icon={{

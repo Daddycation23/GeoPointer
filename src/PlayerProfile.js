@@ -8,17 +8,27 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(2),
     display: 'flex',
     alignItems: 'center',
+    borderRadius: '15px', // Added rounded corners
   },
   info: {
     flexGrow: 1,
   },
   editButton: {
     marginLeft: theme.spacing(2),
+    borderRadius: '20px', // Added rounded corners
   },
   form: {
     display: 'flex',
     flexDirection: 'column',
     gap: theme.spacing(2),
+  },
+  nameInput: {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: '10px', // Added rounded corners to input field
+    },
+  },
+  saveButton: {
+    borderRadius: '20px', // Added rounded corners
   },
 }));
 
@@ -57,8 +67,14 @@ function PlayerProfile({ player, onUpdateProfile }) {
             value={editName}
             onChange={(e) => setEditName(e.target.value)}
             fullWidth
+            className={classes.nameInput}
           />
-          <Button type="submit" variant="contained" color="primary">
+          <Button 
+            type="submit" 
+            variant="contained" 
+            color="primary"
+            className={classes.saveButton}
+          >
             Save Changes
           </Button>
         </form>

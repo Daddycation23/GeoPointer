@@ -37,38 +37,46 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2),
     textAlign: 'center',
     color: theme.palette.text.secondary,
+    borderRadius: '15px', // Added rounded corners
   },
   button: {
     margin: theme.spacing(1),
+    borderRadius: '20px', // Added rounded corners
   },
   greenButton: {
     margin: theme.spacing(1),
-    backgroundColor: '#4CAF50', // Standard green color
+    backgroundColor: '#4CAF50',
     color: 'white',
     '&:hover': {
-      backgroundColor: '#45a049', // Darker green for hover state
+      backgroundColor: '#45a049',
     },
+    borderRadius: '20px', // Added rounded corners
   },
   streetViewImage: {
     width: '100%',
     maxHeight: '400px',
     objectFit: 'cover',
-    borderRadius: theme.shape.borderRadius,
+    borderRadius: '15px', // Added rounded corners
     marginBottom: theme.spacing(2),
   },
   mapContainer: {
     height: '500px',
     width: '100%',
     marginBottom: theme.spacing(2),
+    borderRadius: '15px', // Added rounded corners
+    overflow: 'hidden', // Ensure the map doesn't overflow the rounded container
   },
   nameInput: {
     marginBottom: theme.spacing(2),
+    '& .MuiOutlinedInput-root': {
+      borderRadius: '10px', // Added rounded corners to input field
+    },
   },
   infoBox: {
     padding: theme.spacing(2),
     marginBottom: theme.spacing(2),
     backgroundColor: '#f0f4f8',
-    borderRadius: theme.shape.borderRadius,
+    borderRadius: '15px', // Added rounded corners
   },
   pinInfo: {
     display: 'flex',
@@ -100,10 +108,16 @@ const useStyles = makeStyles((theme) => ({
     marginTop: theme.spacing(3),
     padding: theme.spacing(2),
     backgroundColor: '#f0f4f8',
-    borderRadius: theme.shape.borderRadius,
+    borderRadius: '15px', // Added rounded corners
   },
   rulesList: {
     paddingLeft: theme.spacing(3),
+  },
+  wellDoneGif: {
+    width: '100%',
+    maxWidth: 300,
+    marginBottom: theme.spacing(2),
+    borderRadius: '15px', // Added rounded corners
   },
 }));
 
@@ -374,7 +388,7 @@ function App() {
   const renderPinInfo = () => (
     <Paper className={classes.infoBox}>
       <Typography variant="h6" gutterBottom>
-        Pin Colors
+        Map Legend
       </Typography>
       <div className={classes.pinInfo}>
         <div className={classes.pinColor} style={{ backgroundColor: 'blue' }}></div>
@@ -387,6 +401,10 @@ function App() {
       <div className={classes.pinInfo}>
         <div className={classes.pinColor} style={{ backgroundColor: 'red' }}></div>
         <Typography>Target location (shown after guessing)</Typography>
+      </div>
+      <div className={classes.pinInfo}>
+        <div className={classes.pinColor} style={{ backgroundColor: 'red', height: '2px' }}></div>
+        <Typography>Optimized route from your location to the target (shown after guessing)</Typography>
       </div>
     </Paper>
   );
@@ -458,9 +476,6 @@ function App() {
                   <Grid item xs={12}>
                     <Paper className={classes.paper}>
                       <Typography variant="h6" gutterBottom>
-                        Current Quest
-                      </Typography>
-                      <Typography variant="body1">
                         Can you find this location?
                       </Typography>
                     </Paper>
@@ -519,9 +534,11 @@ function App() {
                   {questCompleted && (
                     <Grid item xs={12}>
                       <Paper className={classes.paper}>
-                        <Typography variant="h6" gutterBottom>
-                          Quest Completed!
-                        </Typography>
+                        <img 
+                          src="/WellDone.gif" 
+                          alt="Well Done!" 
+                          className={classes.wellDoneGif}
+                        />
                         <Typography variant="body1" paragraph>
                           Great job! Ready for the next challenge?
                         </Typography>
@@ -530,7 +547,7 @@ function App() {
                           onClick={handleNextQuest}
                           className={classes.greenButton}
                         >
-                          Start Next Quest
+                          Next →
                         </Button>
                       </Paper>
                     </Grid>
