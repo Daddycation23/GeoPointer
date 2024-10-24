@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useRef } from 'react';
-import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { GoogleMap, Marker, useJsApiLoader, Polyline } from '@react-google-maps/api';
 
 function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCenter, userLocation }) {
   const { isLoaded } = useJsApiLoader({
@@ -9,6 +9,7 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCen
 
   const mapRef = useRef(null);
   const [mapType, setMapType] = useState('hybrid');
+  const [route, setRoute] = useState(null);
 
   const onMapLoad = useCallback((map) => {
     mapRef.current = map;
@@ -18,6 +19,86 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCen
     if (mapRef.current) {
       setMapType(mapRef.current.getMapTypeId());
     }
+  };
+
+  useEffect(() => {
+    if (showTarget && userLocation && location) {
+      const fetchOptimizedRoute = async () => {
+        try {
+          const response = await fetch(`https://routes.googleapis.com/directions/v2:computeRoutes`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Goog-Api-Key': process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+              'X-Goog-FieldMask': 'routes.optimizedIntermediateWaypointIndex,routes.polyline.encodedPolyline'
+            },
+            body: JSON.stringify({
+              origin: {
+                location: {
+                  latLng: {
+                    latitude: userLocation.lat,
+                    longitude: userLocation.lng
+                  }
+                }
+              },
+              destination: {
+                location: {
+                  latLng: {
+                    latitude: location.lat,
+                    longitude: location.lng
+                  }
+                }
+              },
+              travelMode: "DRIVE",
+              optimizeWaypointOrder: true
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+
+          const result = await response.json();
+          if (result.routes && result.routes[0] && result.routes[0].polyline) {
+            setRoute(result.routes[0].polyline.encodedPolyline);
+          }
+        } catch (error) {
+          console.error('Error fetching optimized route:', error);
+        }
+      };
+
+      fetchOptimizedRoute();
+    }
+  }, [showTarget, userLocation, location]);
+
+  const decodePath = (encoded) => {
+    const poly = [];
+    let index = 0, len = encoded.length;
+    let lat = 0, lng = 0;
+
+    while (index < len) {
+      let b, shift = 0, result = 0;
+      do {
+        b = encoded.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      const dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+      lat += dlat;
+
+      shift = 0;
+      result = 0;
+      do {
+        b = encoded.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+      const dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+      lng += dlng;
+
+      poly.push({ lat: lat / 1e5, lng: lng / 1e5 });
+    }
+    return poly;
   };
 
   return isLoaded ? (
@@ -32,7 +113,7 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCen
         disableDefaultUI: false,
         zoomControl: true,
         mapTypeControl: true,
-        streetViewControl: true, // Enable Street View control
+        streetViewControl: true,
         mapTypeControlOptions: {
           style: window.google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
           position: window.google.maps.ControlPosition.TOP_RIGHT,
@@ -69,6 +150,16 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCen
           position={{ lat: location.lat, lng: location.lng }}
           icon={{
             url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
+          }}
+        />
+      )}
+      {route && (
+        <Polyline
+          path={decodePath(route)}
+          options={{
+            strokeColor: "#FF0000",
+            strokeOpacity: 1.0,
+            strokeWeight: 2,
           }}
         />
       )}
