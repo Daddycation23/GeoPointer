@@ -218,7 +218,11 @@ function App() {
     }
 
     try {
-      const placeTypes = ['restaurant', 'museum', 'park', 'library', 'cafe', 'landmark', 'tourist_attraction'];
+      const placeTypes = ['restaurant', 'cafe', 'bar', 'bank', 'hospital', 'pharmacy', 'school', 'university', 'park', 'shopping_mall', 
+        'supermarket', 'airport', 'train_station', 'bus_station', 'library', 'museum', 'art_gallery', 'zoo', 'gym', 'movie_theater', 'tourist_attraction', 'church',
+        'temple', 'mosque', 'synagogue', 'monastery', 'hotel', 'motel', 'hostel', 'aquarium', 'night_club', 'fire_station', 'police_station', 'post_office', 'town_hall',
+        'spa'
+      ];
       const randomType = placeTypes[Math.floor(Math.random() * placeTypes.length)];
 
       // Generate a random location within 15km of the user's location
@@ -385,30 +389,6 @@ function App() {
     localStorage.setItem('playerAvatar', updatedProfile.avatar);
   };
 
-  const renderPinInfo = () => (
-    <Paper className={classes.infoBox}>
-      <Typography variant="h6" gutterBottom>
-        Map Legend
-      </Typography>
-      <div className={classes.pinInfo}>
-        <div className={classes.pinColor} style={{ backgroundColor: 'blue' }}></div>
-        <Typography>Hint location</Typography>
-      </div>
-      <div className={classes.pinInfo}>
-        <div className={classes.pinColor} style={{ backgroundColor: 'green' }}></div>
-        <Typography>Your guess</Typography>
-      </div>
-      <div className={classes.pinInfo}>
-        <div className={classes.pinColor} style={{ backgroundColor: 'red' }}></div>
-        <Typography>Target location (shown after guessing)</Typography>
-      </div>
-      <div className={classes.pinInfo}>
-        <div className={classes.pinColor} style={{ backgroundColor: 'red', height: '2px' }}></div>
-        <Typography>Optimized route from your location to the target (shown after guessing)</Typography>
-      </div>
-    </Paper>
-  );
-
   const renderRules = () => (
     <Paper className={classes.rulesSection}>
       <Typography variant="h6" gutterBottom>
@@ -501,9 +481,6 @@ function App() {
                         userLocation={userLocation}
                       />
                     </div>
-                  </Grid>
-                  <Grid item xs={12}>
-                    {renderPinInfo()}
                   </Grid>
                   <Grid item xs={12}>
                     <Button 

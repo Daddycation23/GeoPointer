@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { GoogleMap, Marker, useJsApiLoader, Polyline } from '@react-google-maps/api';
+import { GoogleMap, Marker, useJsApiLoader, Polyline, InfoWindow } from '@react-google-maps/api';
 
 function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCenter, userLocation }) {
   const { isLoaded } = useJsApiLoader({
@@ -10,6 +10,7 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCen
   const mapRef = useRef(null);
   const [mapType, setMapType] = useState('hybrid');
   const [route, setRoute] = useState(null);
+  const [routeInfo, setRouteInfo] = useState(null);
 
   const onMapLoad = useCallback((map) => {
     mapRef.current = map;
@@ -23,14 +24,14 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCen
 
   useEffect(() => {
     if (showTarget && userLocation && location) {
-      const fetchOptimizedRoute = async () => {
+      const fetchRouteInfo = async () => {
         try {
           const response = await fetch(`https://routes.googleapis.com/directions/v2:computeRoutes`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'X-Goog-Api-Key': process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
-              'X-Goog-FieldMask': 'routes.optimizedIntermediateWaypointIndex,routes.polyline.encodedPolyline'
+              'X-Goog-FieldMask': 'routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline'
             },
             body: JSON.stringify({
               origin: {
@@ -50,7 +51,15 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCen
                 }
               },
               travelMode: "DRIVE",
-              optimizeWaypointOrder: true
+              routingPreference: "TRAFFIC_AWARE",
+              computeAlternativeRoutes: false,
+              routeModifiers: {
+                avoidTolls: false,
+                avoidHighways: false,
+                avoidFerries: false
+              },
+              languageCode: "en-US",
+              units: "METRIC"
             })
           });
 
@@ -59,15 +68,19 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCen
           }
 
           const result = await response.json();
-          if (result.routes && result.routes[0] && result.routes[0].polyline) {
+          if (result.routes && result.routes[0]) {
             setRoute(result.routes[0].polyline.encodedPolyline);
+            setRouteInfo({
+              distance: (result.routes[0].distanceMeters / 1000).toFixed(2), // Convert meters to kilometers
+              duration: Math.round(result.routes[0].duration.split('s')[0] / 60) // Convert seconds to minutes
+            });
           }
         } catch (error) {
-          console.error('Error fetching optimized route:', error);
+          console.error('Error fetching route info:', error);
         }
       };
 
-      fetchOptimizedRoute();
+      fetchRouteInfo();
     }
   }, [showTarget, userLocation, location]);
 
@@ -108,7 +121,7 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCen
       mapContainerStyle={{ 
         width: '100%', 
         height: '100%',
-        borderRadius: '15px', // Added rounded corners
+        borderRadius: '15px',
       }}
       onClick={onMapClick}
       onLoad={onMapLoad}
@@ -158,6 +171,18 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCen
             strokeWeight: 2,
           }}
         />
+      )}
+      {routeInfo && (
+        <InfoWindow
+          position={{ lat: location.lat + 0.00025, lng: location.lng }}
+          onCloseClick={() => setRouteInfo(null)}
+        >
+          <div>
+            <h3>Route Information</h3>
+            <p>Distance: {routeInfo.distance} km</p>
+            <p>Estimated travel time: {routeInfo.duration} minutes (driving)</p>
+          </div>
+        </InfoWindow>
       )}
     </GoogleMap>
   ) : (
