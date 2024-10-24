@@ -121,7 +121,7 @@ function NameInputForm({ onSubmit }) {
   return (
     <Paper className={classes.paper}>
       <Typography variant="h5" gutterBottom>
-        Welcome to GeoQuest!
+        Welcome to GeoPointer!
       </Typography>
       <Typography variant="body1" paragraph>
         Please enter your name to start playing.
@@ -419,9 +419,9 @@ function App() {
       <CssBaseline />
       <Container maxWidth="lg" className={classes.root}>
         <Box className={classes.titleContainer}>
-          <img src="/GeoQuestLogo.png" alt="GeoQuest Logo" className={classes.logo} />
+          <img src="/GeoPointerLogo.png" alt="GeoPointer Logo" className={classes.logo} />
           <Typography variant="h2" component="h1" className={classes.title}>
-            GeoQuest
+            GeoPointer
           </Typography>
         </Box>
         {!playerName ? (
@@ -436,10 +436,10 @@ function App() {
               <>
                 <Paper className={classes.paper}>
                   <Typography variant="h5" gutterBottom>
-                    Welcome to GeoQuest, {playerName}!
+                    Welcome to GeoPointer, {playerName}!
                   </Typography>
                   <Typography variant="body1" paragraph>
-                    Discover places near you by guessing their locations. Who knows you might find a new favourite place?
+                    Discover places near you by guessing and pointing out their locations. Who knows you might find a new favourite place?
                   </Typography>
                   <Button 
                     variant="contained" 
