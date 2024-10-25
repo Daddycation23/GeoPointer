@@ -395,12 +395,13 @@ function App() {
         How to Play
       </Typography>
       <ol className={classes.rulesList}>
-        <li>Start a new quest to get a random location within 15km of your position.</li>
-        <li>Use the street view image and map to guess the location.</li>
-        <li>Click on the map to place your guess.</li>
-        <li>You have 3 attempts to guess the location.</li>
+        <li>Start a new challenge to get a random location within 15km of your position.</li>
+        <li>Use the image and map to guess the location.</li>
         <li>Use the "Show Hint" button for a hint within 500m of the target.</li>
         <li>Switch between 2D and 3D views for a better perspective.</li>
+        <li>You may also use the Pegman to enter street view mode.</li>
+        <li>Click on the map to place your guess.</li>
+        <li>You have 3 attempts to guess the location.</li>
         <li>Points are awarded based on the accuracy of your guess:</li>
         <ul>
           <li>Within 100m: 3 points</li>
@@ -408,6 +409,7 @@ function App() {
           <li>200m - 300m: 1 point</li>
           <li>Over 300m: -1 point</li>
         </ul>
+        <li>The route to the location will be shown when the challenge is completed.</li>
       </ol>
     </Paper>
   );
