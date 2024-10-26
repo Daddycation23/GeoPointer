@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { GoogleMap, Marker, useJsApiLoader, Polyline, InfoWindow } from '@react-google-maps/api';
+import { GoogleMap, Marker, useJsApiLoader, Polyline, InfoWindow, Circle } from '@react-google-maps/api';
 
-function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCenter, userLocation }) {
+function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCenter, userLocation, is3DMode, showHint }) {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries: ['maps'],
@@ -14,6 +14,7 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCen
 
   const onMapLoad = useCallback((map) => {
     mapRef.current = map;
+    console.log("Map loaded", map);
   }, []);
 
   const handleMapTypeChange = () => {
@@ -114,6 +115,8 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCen
     return poly;
   };
 
+  console.log("Map render - showHint:", showHint, "hintLocation:", hintLocation);
+
   return isLoaded ? (
     <GoogleMap
       center={mapCenter || (userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : { lat: 0, lng: 0 })}
@@ -138,11 +141,16 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCen
         mapTypeId: mapType,
       }}
     >
-      {hintLocation && (
-        <Marker
-          position={{ lat: hintLocation.lat, lng: hintLocation.lng }}
-          icon={{
-            url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+      {showHint && hintLocation && (
+        <Circle
+          center={hintLocation}
+          radius={1000}
+          options={{
+            strokeColor: '#FF0000',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: '#FF0000',
+            fillOpacity: 0.35,
           }}
         />
       )}

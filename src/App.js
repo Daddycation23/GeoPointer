@@ -76,7 +76,7 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2),
     marginBottom: theme.spacing(2),
     backgroundColor: '#f0f4f8',
-    borderRadius: '15px', // Added rounded corners
+    borderRadius: theme.shape.borderRadius,
   },
   pinInfo: {
     display: 'flex',
@@ -181,6 +181,7 @@ function App() {
   const [playerName, setPlayerName] = useState(localStorage.getItem('playerName') || '');
   const [userLocation, setUserLocation] = useState(null);
   const [mapCenter, setMapCenter] = useState(null);
+  const [showHint, setShowHint] = useState(false);
 
   useEffect(() => {
     if (playerName) {
@@ -285,7 +286,7 @@ function App() {
     if (!currentLocation) return;
 
     const angle = Math.random() * 2 * Math.PI;
-    const distance = Math.random() * 500;
+    const distance = Math.random() * 500; // Random distance up to 500 meters
 
     const latOffset = distance / 111000 * Math.cos(angle);
     const lngOffset = distance / (111000 * Math.cos(currentLocation.lat * Math.PI / 180)) * Math.sin(angle);
@@ -294,10 +295,15 @@ function App() {
     const hintLng = currentLocation.lng + lngOffset;
 
     setHintLocation({ lat: hintLat, lng: hintLng });
+    console.log("Hint location set:", { lat: hintLat, lng: hintLng }); // Add this line for debugging
   };
 
   const handleShowHint = () => {
-    generateHintLocation();
+    if (!showHint) {
+      generateHintLocation();
+    }
+    setShowHint(!showHint);
+    console.log("Show hint toggled:", !showHint); // Add this line for debugging
   };
 
   const handleMapClick = (event) => {
@@ -414,6 +420,39 @@ function App() {
     </Paper>
   );
 
+  const renderPinInfo = () => (
+    <Paper className={classes.infoBox}>
+      <Typography variant="h6" gutterBottom>
+        Map Legend
+      </Typography>
+      <div className={classes.pinInfo}>
+        <div className={classes.pinColor} style={{ 
+          border: '2px solid red', 
+          backgroundColor: 'transparent', 
+          width: '18px', 
+          height: '18px' 
+        }}></div>
+        <Typography>Hint area (1km radius)</Typography>
+      </div>
+      <div className={classes.pinInfo}>
+        <div className={classes.pinColor} style={{ backgroundColor: 'green' }}></div>
+        <Typography>Your guess</Typography>
+      </div>
+      <div className={classes.pinInfo}>
+        <div className={classes.pinColor} style={{ backgroundColor: 'red' }}></div>
+        <Typography>Target location (shown after guessing)</Typography>
+      </div>
+      <div className={classes.pinInfo}>
+        <div className={classes.pinColor} style={{ 
+          backgroundColor: 'red', 
+          width: '20px', 
+          height: '2px' 
+        }}></div>
+        <Typography>Route to target (shown after guessing)</Typography>
+      </div>
+    </Paper>
+  );
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -481,8 +520,12 @@ function App() {
                         showTarget={showTarget}
                         mapCenter={mapCenter}
                         userLocation={userLocation}
+                        showHint={showHint}
                       />
                     </div>
+                  </Grid>
+                  <Grid item xs={12}>
+                    {renderPinInfo()}
                   </Grid>
                   <Grid item xs={12}>
                     <Button 
@@ -491,7 +534,7 @@ function App() {
                       onClick={handleShowHint}
                       className={classes.button}
                     >
-                      Show Hint
+                      {showHint ? "Hide Hint" : "Show Hint"}
                     </Button>
                     {userGuess && !showTarget && (
                       <Button 
