@@ -525,9 +525,6 @@ function App() {
                     </div>
                   </Grid>
                   <Grid item xs={12}>
-                    {renderPinInfo()}
-                  </Grid>
-                  <Grid item xs={12}>
                     <Button 
                       variant="contained" 
                       color="primary" 
@@ -553,6 +550,9 @@ function App() {
                       </Typography>
                     </Grid>
                   )}
+                  <Grid item xs={12}>
+                    {renderPinInfo()}
+                  </Grid>
                   {questCompleted && (
                     <Grid item xs={12}>
                       <Paper className={classes.paper}>
