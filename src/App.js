@@ -9,24 +9,17 @@ import {
   Paper, 
   Grid,
   TextField,
-  Box
+  Box,
+  IconButton,
+  useTheme  // Add this import
 } from '@material-ui/core';
 import { makeStyles, createTheme } from '@material-ui/core/styles';
+import Brightness4Icon from '@material-ui/icons/Brightness4';
+import Brightness7Icon from '@material-ui/icons/Brightness7';
 import Map from './Map';
 import PlayerProfile from './PlayerProfile';
 
 const API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -36,8 +29,9 @@ const useStyles = makeStyles((theme) => ({
   paper: {
     padding: theme.spacing(2),
     textAlign: 'center',
-    color: theme.palette.text.secondary,
-    borderRadius: '15px', // Added rounded corners
+    color: theme.palette.text.primary,
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: '15px',
   },
   button: {
     margin: theme.spacing(1),
@@ -75,8 +69,9 @@ const useStyles = makeStyles((theme) => ({
   infoBox: {
     padding: theme.spacing(2),
     marginBottom: theme.spacing(2),
-    backgroundColor: '#f0f4f8',
+    backgroundColor: theme.palette.background.paper,
     borderRadius: theme.shape.borderRadius,
+    color: theme.palette.text.primary,
   },
   pinInfo: {
     display: 'flex',
@@ -107,8 +102,12 @@ const useStyles = makeStyles((theme) => ({
   rulesSection: {
     marginTop: theme.spacing(3),
     padding: theme.spacing(2),
-    backgroundColor: '#f0f4f8',
-    borderRadius: '15px', // Added rounded corners
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: '15px',
+    color: theme.palette.text.primary,
+    '& ol, & ul': {
+      color: theme.palette.text.primary,
+    },
   },
   rulesList: {
     paddingLeft: theme.spacing(3),
@@ -119,10 +118,16 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(2),
     borderRadius: '15px', // Added rounded corners
   },
+  darkModeToggle: {
+    position: 'absolute',
+    top: theme.spacing(2),
+    right: theme.spacing(2),
+  },
 }));
 
 function NameInputForm({ onSubmit }) {
   const classes = useStyles();
+  const theme = useTheme();
   const [name, setName] = useState('');
 
   const handleSubmit = (e) => {
@@ -133,8 +138,8 @@ function NameInputForm({ onSubmit }) {
   };
 
   return (
-    <Paper className={classes.paper}>
-      <Typography variant="h5" gutterBottom>
+    <Paper className={classes.paper} style={{ backgroundColor: theme.palette.background.paper }}>
+      <Typography variant="h5" gutterBottom style={{ color: theme.palette.text.primary }}>
         Welcome to GeoPointer!
       </Typography>
       <Typography variant="body1" paragraph>
@@ -164,7 +169,7 @@ function NameInputForm({ onSubmit }) {
 }
 
 function App() {
-  const classes = useStyles();
+  const [darkMode, setDarkMode] = useState(false);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [playerData, setPlayerData] = useState({
     name: localStorage.getItem('playerName') || '',
@@ -182,6 +187,50 @@ function App() {
   const [userLocation, setUserLocation] = useState(null);
   const [mapCenter, setMapCenter] = useState(null);
   const [showHint, setShowHint] = useState(false);
+
+  const theme = React.useMemo(
+    () =>
+      createTheme({
+        palette: {
+          type: darkMode ? 'dark' : 'light',
+          primary: {
+            main: '#1976d2',
+          },
+          secondary: {
+            main: '#dc004e',
+          },
+          background: {
+            default: darkMode ? '#303030' : '#fafafa',
+            paper: darkMode ? '#424242' : '#fff',
+          },
+          text: {
+            primary: darkMode ? '#ffffff' : '#000000',
+            secondary: darkMode ? '#ffffff' : '#757575',
+          },
+        },
+        overrides: {
+          MuiPaper: {
+            root: {
+              backgroundColor: darkMode ? '#424242' : '#fff',
+              color: darkMode ? '#ffffff' : '#000000',
+            },
+          },
+          MuiTypography: {
+            root: {
+              color: 'inherit',
+            },
+          },
+          MuiButton: {
+            root: {
+              color: 'inherit',
+            },
+          },
+        },
+      }),
+    [darkMode]
+  );
+
+  const classes = useStyles();
 
   useEffect(() => {
     if (playerName) {
@@ -396,11 +445,11 @@ function App() {
   };
 
   const renderRules = () => (
-    <Paper className={classes.rulesSection}>
-      <Typography variant="h6" gutterBottom>
+    <Paper className={classes.rulesSection} elevation={3} style={{ backgroundColor: theme.palette.background.paper }}>
+      <Typography variant="h6" gutterBottom style={{ color: theme.palette.text.primary }}>
         How to Play
       </Typography>
-      <ol className={classes.rulesList}>
+      <ol className={classes.rulesList} style={{ color: theme.palette.text.primary }}>
         <li>Start a new challenge to get a random location within 15km of your position.</li>
         <li>Use the image and map to guess the location.</li>
         <li>Use the "Show Hint" button for a hint within 500m of the target.</li>
@@ -409,7 +458,7 @@ function App() {
         <li>Click on the map to place your guess.</li>
         <li>You have 3 attempts to guess the location.</li>
         <li>Points are awarded based on the accuracy of your guess:</li>
-        <ul>
+        <ul className={classes.rulesList} style={{ color: theme.palette.text.primary }}>
           <li>Within 100m: 3 points</li>
           <li>100m - 200m: 2 points</li>
           <li>200m - 300m: 1 point</li>
@@ -421,10 +470,10 @@ function App() {
   );
 
   const renderPinInfo = () => (
-    <Paper className={classes.infoBox}>
-      <Typography variant="h6" gutterBottom>
+    <Paper className={classes.infoBox} elevation={3} style={{ backgroundColor: theme.palette.background.paper }}>
+      <Typography variant="h6" gutterBottom style={{ color: theme.palette.text.primary }}>
         Map Legend
-      </Typography>
+      </Typography >
       <div className={classes.pinInfo}>
         <div className={classes.pinColor} style={{ 
           border: '2px solid red', 
@@ -432,15 +481,15 @@ function App() {
           width: '18px', 
           height: '18px' 
         }}></div>
-        <Typography>Hint area (1km radius)</Typography>
+        <Typography style={{ color: theme.palette.text.primary }}>Hint area (1km radius)</Typography>
       </div>
       <div className={classes.pinInfo}>
         <div className={classes.pinColor} style={{ backgroundColor: 'green' }}></div>
-        <Typography>Your guess</Typography>
+        <Typography style={{ color: theme.palette.text.primary }}>Your guess</Typography>
       </div>
       <div className={classes.pinInfo}>
         <div className={classes.pinColor} style={{ backgroundColor: 'red' }}></div>
-        <Typography>Target location (shown after guessing)</Typography>
+        <Typography style={{ color: theme.palette.text.primary }}>Target location (shown after guessing)</Typography>
       </div>
       <div className={classes.pinInfo}>
         <div className={classes.pinColor} style={{ 
@@ -448,15 +497,26 @@ function App() {
           width: '20px', 
           height: '2px' 
         }}></div>
-        <Typography>Route to target (shown after guessing)</Typography>
+        <Typography style={{ color: theme.palette.text.primary }}>Route to target (shown after guessing)</Typography>
       </div>
     </Paper>
   );
+
+  const handleToggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Container maxWidth="lg" className={classes.root}>
+        <IconButton
+          className={classes.darkModeToggle}
+          onClick={handleToggleDarkMode}
+          color="inherit"
+        >
+          {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
+        </IconButton>
         <Box className={classes.titleContainer}>
           <img src="/GeoPointerLogo.png" alt="GeoPointer Logo" className={classes.logo} />
           <Typography variant="h2" component="h1" className={classes.title}>
@@ -464,7 +524,9 @@ function App() {
           </Typography>
         </Box>
         {!playerName ? (
-          <NameInputForm onSubmit={handleNameSubmit} />
+          <Paper className={classes.paper} elevation={3} style={{ backgroundColor: theme.palette.background.paper }}>
+            <NameInputForm onSubmit={handleNameSubmit} />
+          </Paper>
         ) : (
           <>
             <PlayerProfile player={playerData} onUpdateProfile={handleProfileUpdate} />
@@ -473,11 +535,11 @@ function App() {
             )}
             {!guessMode ? (
               <>
-                <Paper className={classes.paper}>
-                  <Typography variant="h5" gutterBottom>
+                <Paper className={classes.paper} elevation={3} style={{ backgroundColor: theme.palette.background.paper }}>
+                  <Typography variant="h5" gutterBottom style={{ color: theme.palette.text.primary }}>
                     Welcome to GeoPointer, {playerName}!
                   </Typography>
-                  <Typography variant="body1" paragraph>
+                  <Typography variant="body1" paragraph style={{ color: theme.palette.text.primary }}>
                     Discover places near you by guessing and pointing out their locations. Who knows you might find a new favourite place?
                   </Typography>
                   <Button 
@@ -495,8 +557,8 @@ function App() {
               currentLocation && (
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
-                    <Paper className={classes.paper}>
-                      <Typography variant="h6" gutterBottom>
+                    <Paper className={classes.paper} elevation={3} style={{ backgroundColor: theme.palette.background.paper }}>
+                      <Typography variant="h6" gutterBottom style={{ color: theme.palette.text.primary }}>
                         Can you find this location?
                       </Typography>
                     </Paper>
@@ -555,13 +617,13 @@ function App() {
                   </Grid>
                   {questCompleted && (
                     <Grid item xs={12}>
-                      <Paper className={classes.paper}>
+                      <Paper className={classes.paper} style={{ backgroundColor: theme.palette.background.paper }}>
                         <img 
                           src="/WellDone.gif" 
                           alt="Well Done!" 
                           className={classes.wellDoneGif}
                         />
-                        <Typography variant="body1" paragraph>
+                        <Typography variant="body1" paragraph style={{ color: theme.palette.text.primary }}>
                           Great job! Ready for the next challenge?
                         </Typography>
                         <Button 

@@ -185,7 +185,7 @@ function Map({ location, hintLocation, userGuess, onMapClick, showTarget, mapCen
           position={{ lat: location.lat + 0.00025, lng: location.lng }}
           onCloseClick={() => setRouteInfo(null)}
         >
-          <div>
+          <div style={{ color: 'black' }}>
             <h3>Route Information</h3>
             <p>Distance: {routeInfo.distance} km</p>
             <p>Estimated travel time: {routeInfo.duration} minutes (driving)</p>
