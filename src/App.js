@@ -70,7 +70,7 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2),
     marginBottom: theme.spacing(2),
     backgroundColor: theme.palette.background.paper,
-    borderRadius: theme.shape.borderRadius,
+    borderRadius: '15px', // Changed from theme.shape.borderRadius to match other components
     color: theme.palette.text.primary,
   },
   pinInfo: {
