@@ -142,7 +142,7 @@ function NameInputForm({ onSubmit }) {
       <Typography variant="h5" gutterBottom style={{ color: theme.palette.text.primary }}>
         Welcome to GeoPointer!
       </Typography>
-      <Typography variant="body1" paragraph>
+      <Typography variant="body1" paragraph style={{ color: theme.palette.text.primary }}>
         Please enter your name to start playing.
       </Typography>
       <form onSubmit={handleSubmit}>
@@ -510,13 +510,14 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Container maxWidth="lg" className={classes.root}>
-        <IconButton
+        <Button
           className={classes.darkModeToggle}
           onClick={handleToggleDarkMode}
           color="inherit"
+          startIcon={darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
         >
-          {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
-        </IconButton>
+          {darkMode ? "Light" : "Dark"}
+        </Button>
         <Box className={classes.titleContainer}>
           <img src="/GeoPointerLogo.png" alt="GeoPointer Logo" className={classes.logo} />
           <Typography variant="h2" component="h1" className={classes.title}>
@@ -524,9 +525,7 @@ function App() {
           </Typography>
         </Box>
         {!playerName ? (
-          <Paper className={classes.paper} elevation={3} style={{ backgroundColor: theme.palette.background.paper }}>
-            <NameInputForm onSubmit={handleNameSubmit} />
-          </Paper>
+          <NameInputForm onSubmit={handleNameSubmit} />
         ) : (
           <>
             <PlayerProfile player={playerData} onUpdateProfile={handleProfileUpdate} />
@@ -548,7 +547,7 @@ function App() {
                     onClick={handleStartQuest}
                     className={classes.button}
                   >
-                    Start New Quest
+                    Start →
                   </Button>
                 </Paper>
                 {renderRules()}

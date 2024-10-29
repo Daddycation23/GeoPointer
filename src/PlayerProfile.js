@@ -8,14 +8,27 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: theme.spacing(2),
     display: 'flex',
     alignItems: 'center',
-    borderRadius: '15px', // Added rounded corners
+    borderRadius: '15px',
   },
   info: {
     flexGrow: 1,
   },
+  buttonContainer: {
+    display: 'flex',
+    gap: theme.spacing(2),
+  },
   editButton: {
     marginLeft: theme.spacing(2),
-    borderRadius: '20px', // Added rounded corners
+    borderRadius: '20px',
+  },
+  signOutButton: {
+    marginLeft: theme.spacing(2),
+    borderRadius: '20px',
+    backgroundColor: theme.palette.error.main,
+    color: 'white',
+    '&:hover': {
+      backgroundColor: theme.palette.error.dark,
+    },
   },
   form: {
     display: 'flex',
@@ -24,11 +37,11 @@ const useStyles = makeStyles((theme) => ({
   },
   nameInput: {
     '& .MuiOutlinedInput-root': {
-      borderRadius: '10px', // Added rounded corners to input field
+      borderRadius: '10px',
     },
   },
   saveButton: {
-    borderRadius: '20px', // Added rounded corners
+    borderRadius: '20px',
   },
 }));
 
@@ -43,6 +56,14 @@ function PlayerProfile({ player, onUpdateProfile }) {
     setIsEditing(false);
   };
 
+  const handleSignOut = () => {
+    // Clear player data from localStorage
+    localStorage.removeItem('playerName');
+    localStorage.removeItem('playerPoints');
+    // Reload the page to return to the name input screen
+    window.location.reload();
+  };
+
   return (
     <Paper className={classes.paper}>
       {!isEditing ? (
@@ -51,14 +72,23 @@ function PlayerProfile({ player, onUpdateProfile }) {
             <Typography variant="h6">{player.name}</Typography>
             <Typography variant="body1">Points: {player.points}</Typography>
           </div>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={() => setIsEditing(true)}
-            className={classes.editButton}
-          >
-            Edit Name
-          </Button>
+          <div className={classes.buttonContainer}>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={() => setIsEditing(true)}
+              className={classes.editButton}
+            >
+              Edit Name
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleSignOut}
+              className={classes.signOutButton}
+            >
+              Sign Out
+            </Button>
+          </div>
         </>
       ) : (
         <form onSubmit={handleSubmit} className={classes.form}>
