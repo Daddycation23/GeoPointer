@@ -18,6 +18,7 @@ import Brightness4Icon from '@material-ui/icons/Brightness4';
 import Brightness7Icon from '@material-ui/icons/Brightness7';
 import Map from './Map';
 import PlayerProfile from './PlayerProfile';
+import RangeSelector from './components/RangeSelector';
 
 const API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
 
@@ -187,6 +188,7 @@ function App() {
   const [userLocation, setUserLocation] = useState(null);
   const [mapCenter, setMapCenter] = useState(null);
   const [showHint, setShowHint] = useState(false);
+  const [targetRange, setTargetRange] = useState(15); // Default 15km
 
   const theme = React.useMemo(
     () =>
@@ -268,16 +270,19 @@ function App() {
     }
 
     try {
-      const placeTypes = ['restaurant', 'cafe', 'bar', 'bank', 'hospital', 'pharmacy', 'school', 'university', 'park', 'shopping_mall', 
-        'supermarket', 'airport', 'train_station', 'bus_station', 'library', 'museum', 'art_gallery', 'zoo', 'gym', 'movie_theater', 'tourist_attraction', 'church',
-        'temple', 'mosque', 'synagogue', 'monastery', 'hotel', 'motel', 'hostel', 'aquarium', 'night_club', 'fire_station', 'police_station', 'post_office', 'town_hall',
-        'spa'
+      const placeTypes = [
+        'restaurant', 'cafe', 'bar', 'bank', 'hospital', 'pharmacy', 'school', 
+        'university', 'park', 'shopping_mall', 'supermarket', 'airport', 
+        'train_station', 'bus_station', 'library', 'museum', 'art_gallery', 
+        'zoo', 'gym', 'movie_theater', 'tourist_attraction', 'church', 'temple', 
+        'mosque', 'synagogue', 'monastery', 'hotel', 'motel', 'hostel', 
+        'aquarium', 'night_club', 'fire_station', 'police_station', 
+        'post_office', 'town_hall', 'spa'
       ];
       const randomType = placeTypes[Math.floor(Math.random() * placeTypes.length)];
 
-      // Generate a random location within 15km of the user's location
+      const distance = Math.random() * (targetRange * 1000); // Convert km to meters
       const angle = Math.random() * 2 * Math.PI;
-      const distance = Math.random() * 15000; // Up to 15km in meters
       const latOffset = distance / 111111 * Math.cos(angle);
       const lngOffset = distance / (111111 * Math.cos(userLocation.lat * Math.PI / 180)) * Math.sin(angle);
 
@@ -450,7 +455,7 @@ function App() {
         How to Play
       </Typography>
       <ol className={classes.rulesList} style={{ color: theme.palette.text.primary }}>
-        <li>Start a new challenge to get a random location within 15km of your position.</li>
+        <li>Start a new challenge to get a random location within {targetRange}km of your position.</li>
         <li>Use the image and map to guess the location.</li>
         <li>Use the "Show Hint" button for a hint within 500m of the target.</li>
         <li>Switch between 2D and 3D views for a better perspective.</li>
@@ -541,6 +546,10 @@ function App() {
                   <Typography variant="body1" paragraph style={{ color: theme.palette.text.primary }}>
                     Discover places near you by guessing and pointing out their locations. Who knows you might find a new favourite place?
                   </Typography>
+                  <RangeSelector 
+                    range={targetRange} 
+                    onRangeChange={setTargetRange} 
+                  />
                   <Button 
                     variant="contained" 
                     color="primary" 
