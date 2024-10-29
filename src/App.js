@@ -19,6 +19,7 @@ import Brightness7Icon from '@material-ui/icons/Brightness7';
 import Map from './Map';
 import PlayerProfile from './PlayerProfile';
 import RangeSelector from './components/RangeSelector';
+import { StorageService } from './services/StorageService';
 
 const API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
 
@@ -124,6 +125,26 @@ const useStyles = makeStyles((theme) => ({
     top: theme.spacing(2),
     right: theme.spacing(2),
   },
+  revealButton: {
+    margin: theme.spacing(1),
+    border: `1px solid ${theme.palette.secondary.main}`,
+    color: theme.palette.secondary.main,
+    backgroundColor: 'transparent',
+    '&:hover': {
+      backgroundColor: theme.palette.secondary.main,
+      color: 'white',
+    },
+    borderRadius: '20px',
+  },
+  backButton: {
+    margin: theme.spacing(1),
+    backgroundColor: '#your_color_here',
+    color: 'white',
+    '&:hover': {
+      backgroundColor: '#darker_shade_here',
+    },
+    borderRadius: '20px',
+  },
 }));
 
 function NameInputForm({ onSubmit }) {
@@ -189,6 +210,8 @@ function App() {
   const [mapCenter, setMapCenter] = useState(null);
   const [showHint, setShowHint] = useState(false);
   const [targetRange, setTargetRange] = useState(15); // Default 15km
+  const [streak, setStreak] = useState(0);
+  const [currentPoints, setCurrentPoints] = useState(null);
 
   const theme = React.useMemo(
     () =>
@@ -374,15 +397,31 @@ function App() {
     const distance = calculateDistance(userGuess, currentLocation);
     let points = 0;
 
-    if (distance > 300) points = -1;
-    else if (distance <= 300 && distance > 200) points = 1;
-    else if (distance <= 200 && distance > 100) points = 2;
-    else points = 3;
+    if (distance > 300) {
+      points = playerData.points > 0 ? -1 : 0;
+      setStreak(0);
+    } else if (distance <= 300 && distance > 200) {
+      points = 1;
+      setStreak(prev => prev + 1);
+    } else if (distance <= 200 && distance > 100) {
+      points = 2;
+      setStreak(prev => prev + 1);
+    } else {
+      points = 3;
+      setStreak(prev => prev + 1);
+    }
 
-    setPlayerData(prevData => ({
-      ...prevData,
-      points: prevData.points + points
-    }));
+    setCurrentPoints(points);
+
+    setPlayerData(prevData => {
+      const newPoints = Math.max(0, prevData.points + points);
+      const newData = {
+        ...prevData,
+        points: newPoints
+      };
+      StorageService.set('playerPoints', newPoints);
+      return newData;
+    });
 
     setGuessCount(prevCount => prevCount + 1);
 
@@ -392,10 +431,10 @@ function App() {
       if (distance <= 100) {
         alert(`Your guess was ${Math.round(distance)} meters away. You earned ${points} points! Quest completed.`);
       } else {
-        alert(`Your guess was ${Math.round(distance)} meters away. You earned ${points} points. You've used all 3 guesses. The location will now be shown.`);
+        alert(`Your guess was ${Math.round(distance)} meters away. ${points !== 0 ? `You earned ${points} points.` : ''} You've used all 3 guesses. The location will now be shown.`);
       }
     } else {
-      alert(`Your guess was ${Math.round(distance)} meters away. You earned ${points} points! You have ${3 - (guessCount + 1)} guesses left.`);
+      alert(`Your guess was ${Math.round(distance)} meters away. ${points !== 0 ? `You earned ${points} points!` : ''} You have ${3 - (guessCount + 1)} guesses left.`);
       setUserGuess(null);
     }
   };
@@ -511,6 +550,18 @@ function App() {
     setDarkMode(!darkMode);
   };
 
+  const handleRevealLocation = () => {
+    if (playerData.points >= 3) {
+      setPlayerData(prevData => ({
+        ...prevData,
+        points: prevData.points - 3
+      }));
+      setShowTarget(true);
+      setQuestCompleted(true);
+      StorageService.set('playerPoints', playerData.points - 3);
+    }
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -612,10 +663,20 @@ function App() {
                         Submit Guess
                       </Button>
                     )}
+                    {!showTarget && playerData.points >= 3 && (
+                      <Button 
+                        variant="contained" 
+                        onClick={handleRevealLocation}
+                        className={classes.revealButton}
+                        style={{ marginLeft: '8px' }}
+                      >
+                        Reveal Location (-3 points)
+                      </Button>
+                    )}
                   </Grid>
                   {!questCompleted && (
                     <Grid item xs={12}>
-                      <Typography variant="h6" color="error">
+                      <Typography variant="h6" color="secondary">
                         Guesses left: {3 - guessCount}
                       </Typography>
                     </Grid>
@@ -649,7 +710,7 @@ function App() {
                       variant="contained" 
                       color="secondary" 
                       onClick={handleBackToMenu}
-                      className={classes.button}
+                      className={classes.backButton}
                     >
                       Back to Menu
                     </Button>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Typography, Paper, Button, TextField } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+import { red } from '@material-ui/core/colors';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -20,11 +21,18 @@ const useStyles = makeStyles((theme) => ({
   editButton: {
     marginLeft: theme.spacing(2),
     borderRadius: '20px',
+    border: `1px solid ${theme.palette.primary.main}`,
+    color: theme.palette.primary.main,
+    backgroundColor: 'transparent',
+    '&:hover': {
+      backgroundColor: theme.palette.primary.main,
+      color: 'white',
+    },
   },
   signOutButton: {
     marginLeft: theme.spacing(2),
     borderRadius: '20px',
-    backgroundColor: theme.palette.error.main,
+    backgroundColor: theme.palette.secondary.main,
     color: 'white',
     '&:hover': {
       backgroundColor: theme.palette.error.dark,
