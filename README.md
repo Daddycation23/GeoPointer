@@ -1,6 +1,7 @@
 # Welcome to GeoPointer!🎉
 
 GeoPointer is a game that allows you to explore the places around you which you may or may not know already, who knows you might find a hidden gem around you?
+Try it out [HERE](https://geopointer.netlify.app/)
 
 ## How to run the files
 
